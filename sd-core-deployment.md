@@ -4,7 +4,7 @@ This guide covers deploying SD-Core, the 5G core network, on your Kubernetes clu
 
 ## Prerequisites
 
-- Kubernetes cluster running (see [Kubernetes Setup](kubernetes-setup.md))
+- Kubernetes cluster running
 - Helm 3 installed
 - kubectl configured
 
