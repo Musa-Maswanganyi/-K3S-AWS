@@ -93,7 +93,7 @@ Scheduler: Decides which node should run which workload based on available resou
 Controller Manager: Monitors the state of the cluster and makes changes to reach the "desired state" (e.g., ensuring 3 copies of a pod are always running).
 Embedded etcd: This is the distributed database. By using --cluster-init on Master-1, we created a shared "ledger" where all three nodes store cluster data. This ensures "Data Consistency" across the AWS environment.
 
-3. High Availability (HA) 
+High Availability (HA) 
 By deploying 3 master nodes instead of 1, we achieved Fault Tolerance.
 The cluster requires a majority of master nodes to be alive to function. With 3 nodes, the cluster can tolerate one node failing completely without any service interruption.
 AWS Security Groups: The architecture relies on specific inbound rules (Ports 6443, 2379-2380) to allow these control plane components to talk to each other securely within the VPC.
@@ -103,9 +103,12 @@ AWS Security Groups: The architecture relies on specific inbound rules (Ports 64
 
 This assignment improved my understanding of how cloud infrastructure and container orchestration work together in real-world systems. I gained practical experience deploying a distributed system and configuring communication between multiple nodes in a secure environment.
 One key insight is the importance of networking in Kubernetes clusters. Many issues encountered during deployment were related to security group rules and inter-node communication rather than the K3s installation itself. This highlighted how critical proper network configuration is in distributed systems.
+
 A major plot twist for me was the bridge between my local environment and the AWS cloud. Using the .pem key through Windows PowerShell to execute scp and ssh commands highlighted the realities of remote server management. Reflecting on the move from Step 3 (Single Master) to Step 4 (Multi-Master), the scalability of containerization became clear. In a 5G ecosystem, we need to deploy stuff quickly yet accurately.
 Overall, this project strengthened my practical skills in cloud computing, Kubernetes, and system architecture, while also improving my troubleshooting and problem-solving abilities in a distributed environment.
-
-Problem Solving: 
 A key learning moment occurred when resolving the "Database is Locked" error. This challenge highlighted that in a multi-node environment, configuration consistency is important. It taught me the importance of clean configuration management and system health checks.
 
+With regards to Scalability via Virtualization and Containerization, this lab showed me how these two technologies work together to create Scalable Services:
+Virtualization (AWS EC2): Provided the "Hardware Flexibility." I could create three t3.large instances in minutes. If the network needs more power, I can simply add more virtual machines.
+Containerization (K3s): Provided the "Application Agility." Once the machine was ready, K3s allowed me to deploy applications that functioned the same way regardless of the server they are on.
+This enabled a 5G network to scale horizontally. When user demand spikes, the system can automatically add more containers across more virtual instances without any manual rewiring or downtime.
