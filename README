@@ -1,0 +1,80 @@
+*Full Name:* Musa Maswanganyi  
+*Student Number:* 230019978  
+*Module:* Communication Networks Practice 4  
+*Lecturer:* Dr. Waldon Hendricks  
+*Date:* 27 March 2026  
+*Repository:* https://github.com/cput-it-advdip/open5g-on-aws-ec2-Musa-Maswanganyi
+
+K3s on AWS Practical Setup Guide
+
+Step 1 — Create a Key Pair
+A key pair was created to allow secure SSH access into the EC2 instances.
+1.  Navigated to the EC2 Dashboard under **Network & Security** > **Key Pairs**.
+2.  Clicked **Create key pair**.
+3.  Configured the following:
+    Name: `k3s-key`
+    Key pair type: RSA
+    Private key file format: .pem
+4.  Saved the `.pem` file and set correct permissions locally:
+    ```bash
+    chmod 400 ~/Downloads/k3s-key.pem
+    ```
+
+Step 2 — Create a Security Group
+A virtual firewall (`k3s-ha-sg`) was created to open specific ports for the K3s cluster.
+
+| Type | Protocol | Port Range | Source |
+| :--- | :--- | :--- | :--- |
+| SSH | TCP | 22 | 0.0.0.0/0 |
+| Custom TCP | TCP | 6443 | 0.0.0.0/0 |
+| Custom TCP | TCP | 2379-2380 | k3s-ha-sg (self) |
+| Custom TCP | TCP | 10250 | k3s-ha-sg (self) |
+| Custom UDP | UDP | 8472 | k3s-ha-sg (self) |
+| Custom TCP | TCP | 30000-32767 | 0.0.0.0/0 |
+
+Step 3 — Launch 3 EC2 Instances
+Three instances were provisioned manually to serve as the cluster nodes.
+1.  **AMI:** Ubuntu Server 22.04 LTS (HVM), SSD Volume Type.
+2.  **Instance Type:** `t3.large`.
+3.  **Key Pair:** `k3s-key`.
+4.  **Network Settings:**
+    * **Auto-assign public IP:** Enable.
+    * **Firewall:** Selected existing `k3s-ha-sg`.
+5.  **Storage:** Increased to 20 GiB (gp3) for better performance.
+6.  **Naming:** Instances were named `k3s-master-1`, `k3s-master-2`, and `k3s-master-3`.
+
+Step 4 — Record All IP Addresses
+The following IP addresses were recorded for inter-node communication and SSH access:
+
+| Instance Name | Private IP | Public IP |
+| :--- | :--- | :--- |
+| k3s-master-1 | 172.31.84.15 | 3.94.52.161 |
+| k3s-master-2 | 172.31.91.139 | (As recorded in console) |
+| k3s-master-3 | 172.31.80.126 | (As recorded in console) |
+
+---
+
+1. Initialize Master-1
+```bash
+curl -sfL [https://get.k3s.io](https://get.k3s.io) | sh -s - server --cluster-init
+2. Join Master-2 and Master-3
+Bash
+curl -sfL [https://get.k3s.io](https://get.k3s.io) | sh -s - server \
+  --server [https://172.31.84.15:6443](https://172.31.84.15:6443) \
+  --token <YOUR-NODE-TOKEN>
+
+PART 5 — Evidence of Deployment
+
+Technical Reflection
+
+What I Learned
+Through this assignment, I gained hands-on experience in building a resilient, cloud-native environment. Deploying a High-Availability (HA) K3s cluster on AWS showed me that Kubernetes is not just about running containers, but also about managing cluster state and networking. I learned how to bootstrap a cluster using an initialized API server and how a distributed datastore like etcd keeps the cluster consistent across multiple master nodes.
+
+Challenges and Resolutions
+One of the main challenges I faced was during the Master-2 join process, where I encountered a **"database is locked"** error. This helped me understand how etcd quorum works in a distributed system. I resolved the issue by stopping the k3s service on the second node, clearing the stale database files in `/var/lib/rancher/k3s/server/db/`, and verifying that the AWS Security Group allowed traffic on ports **2379–2380**. This showed me that networking misconfigurations are often the cause of cluster issues.
+
+K3s, 5G, and Cloud-Native Concepts
+K3s is important for 5G and edge computing because it provides a lightweight Kubernetes platform with a small resource footprint. This makes it suitable for deploying 5G Core services closer to users, reducing latency. It also supports cloud-native principles, allowing applications to scale and update without downtime.
+
+Scalability via Virtualization and Containerization
+Virtualization (using AWS EC2) provides the infrastructure layer, while containerization (using K3s) manages application deployment. Together, they allow for horizontal scaling. When demand increases, new instances can be created quickly, and containers ensure the application runs consistently across all nodes, enabling efficient and scalable service delivery.
